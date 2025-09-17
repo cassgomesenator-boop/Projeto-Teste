@@ -1,0 +1,48 @@
+name: Build Windows installer and create release
+on:
+  push:
+    branches: [ "electron-installer-setup" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build React app
+        run: npm run build --if-present
+
+      - name: Build Electron installer
+        env:
+          CSC_LINK: ''
+        run: npm run electron:build --if-present
+
+      - name: Create ZIP with installer and build
+        run: |
+          mkdir release
+          powershell -Command "Compress-Archive -Path dist/*, build/* -DestinationPath release/GestaoObras-Installer.zip -Force"
+
+      - name: Publish Release with ZIP
+        uses: ncipollo/release-action@v1
+        with:
+          tag: installer-${{ github.run_id }}
+          files: release/GestaoObras-Installer.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
