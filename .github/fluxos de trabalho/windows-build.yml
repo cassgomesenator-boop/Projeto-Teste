@@ -1,7 +1,15 @@
 name: Build Windows installer and create release
+
+# Dispara em push no branch e permite execução manual
 on:
   push:
     branches: [ "electron-installer-setup" ]
+  workflow_dispatch:
+
+# Permissões solicitadas ao GITHUB_TOKEN (escrita em contents para criar releases)
+permissions:
+  contents: write
+  packages: write
 
 jobs:
   build-windows:
@@ -36,7 +44,7 @@ jobs:
 
       - name: Create ZIP with installer and build
         run: |
-          mkdir release
+          mkdir -Force release
           powershell -Command "Compress-Archive -Path dist/*, build/* -DestinationPath release/GestaoObras-Installer.zip -Force"
 
       - name: Publish Release with ZIP
