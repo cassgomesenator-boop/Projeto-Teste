@@ -1,0 +1,12 @@
+name: Test push trigger
+on:
+  push:
+    branches:
+      - electron-installer-setup
+
+jobs:
+  echo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hi
+        run: echo "Workflow triggered"
